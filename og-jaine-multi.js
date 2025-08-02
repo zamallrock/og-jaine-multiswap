@@ -125,8 +125,19 @@ async function swap(wallet, from, to, amount) {
   const tx = await router.exactInputSingle(params, { gasLimit: 200000, gasPrice });
 
   log(`📤 TX sent: ${tx.hash}`);
-  await tx.wait();
-  log(`✅ ${tokenSymbol(from)} → ${tokenSymbol(to)}: ${format(amount)} - TX confirmed: ${EXPLORER}/tx/${tx.hash}`);
+
+  // ✅ Timeout: 60 detik
+  try {
+    await Promise.race([
+      tx.wait(),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("TX timeout")), 60000)
+      )
+    ]);
+    log(`✅ ${tokenSymbol(from)} → ${tokenSymbol(to)}: ${format(amount)} - TX confirmed: ${EXPLORER}/tx/${tx.hash}`);
+  } catch (err) {
+    throw new Error(`TX Failed or Timeout (${tokenSymbol(from)} → ${tokenSymbol(to)}): ${err.message}`);
+  }
 }
 
 const pairs = [
@@ -184,7 +195,7 @@ async function startBot() {
       if (!success) log("❌ Semua retry swap gagal.");
 
       log(`⏳ Delay 20 detik sebelum pair berikutnya...`);
-      await delay(20000); // delay antar pair
+      await delay(20000);
       swapCount++;
     }
 
