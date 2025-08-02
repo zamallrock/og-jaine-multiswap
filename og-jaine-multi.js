@@ -144,6 +144,14 @@ async function startBot() {
       const raw = (Math.random() * 0.002 + 0.001).toFixed(6);
       const amount = ethers.parseUnits(raw, 18);
 
+      // ✅ CEK SALDO sebelum swap
+      const tokenContract = new ethers.Contract(from, ERC20_ABI, provider);
+      const balance = await tokenContract.balanceOf(signer.address);
+      if (balance < amount) {
+        log(`⏭️ Skip: Saldo ${tokenSymbol(from)} kurang dari ${raw}`);
+        continue;
+      }
+
       log(`▶️ Swap #${swapCount}: Wallet ${name} akan swap ${tokenSymbol(from)} → ${tokenSymbol(to)} (Amount: ${raw})`);
 
       let success = false;
@@ -165,7 +173,7 @@ async function startBot() {
       }
 
       if (!success) log("❌ Semua retry swap gagal.");
-      await delay(20000); // 20 detik antar pair swap
+      await delay(20000); // antar pair
       swapCount++;
     }
 
