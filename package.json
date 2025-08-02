@@ -1,0 +1,23 @@
+{
+  "name": "og-jaine-swap-bot",
+  "version": "1.0.0",
+  "description": "ZAMALLROCK | Jaine Testnet Multi-Wallet Swap Bot",
+  "main": "og-jaine-multi.js",
+  "type": "module",
+  "scripts": {
+    "start": "node og-jaine-multi.js"
+  },
+  "dependencies": {
+    "ethers": "^6.10.0"
+  },
+  "keywords": [
+    "swap",
+    "bot",
+    "ethers",
+    "0g",
+    "testnet",
+    "multiwallet"
+  ],
+  "author": "ZAMALLROCK",
+  "license": "MIT"
+}
