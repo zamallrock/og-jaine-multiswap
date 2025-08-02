@@ -70,9 +70,12 @@ async function approveIfNeeded(wallet, token, amount) {
   const contract = new ethers.Contract(token, ERC20_ABI, wallet);
   const allowance = await contract.allowance(wallet.address, config.ROUTER_ADDRESS);
   if (allowance < amount) {
+    log(`🛂 Approving ${tokenSymbol(token)}...`);
     const tx = await contract.approve(config.ROUTER_ADDRESS, amount);
     await tx.wait();
-    log(`Approve: ${token.slice(0, 6)}... OK`);
+    log(`✅ Approve: ${token.slice(0, 6)}... OK`);
+  } else {
+    log(`✔️  Allowance cukup untuk ${tokenSymbol(token)} (skip approve)`);
   }
 }
 
@@ -101,7 +104,11 @@ async function printBalance(wallet) {
 
 async function swap(wallet, from, to, amount) {
   const router = new ethers.Contract(config.ROUTER_ADDRESS, CONTRACT_ABI, wallet);
+
+  log(`⏳ [${tokenSymbol(from)}] Checking allowance...`);
   await approveIfNeeded(wallet, from, amount);
+
+  log(`🚀 Sending swap TX ${tokenSymbol(from)} → ${tokenSymbol(to)} (Amount: ${format(amount)})...`);
   const deadline = Math.floor(Date.now() / 1000) + 300;
   const params = {
     tokenIn: from,
@@ -113,10 +120,13 @@ async function swap(wallet, from, to, amount) {
     amountOutMinimum: 0,
     sqrtPriceLimitX96: 0n
   };
+
   const gasPrice = (await provider.getFeeData()).gasPrice * (Math.random() > 0.5 ? 2n : 1n);
   const tx = await router.exactInputSingle(params, { gasLimit: 200000, gasPrice });
+
+  log(`📤 TX sent: ${tx.hash}`);
   await tx.wait();
-  log(`${tokenSymbol(from)} → ${tokenSymbol(to)}: ${format(amount)} - TX sent: ${EXPLORER}/tx/${tx.hash}`);
+  log(`✅ ${tokenSymbol(from)} → ${tokenSymbol(to)}: ${format(amount)} - TX confirmed: ${EXPLORER}/tx/${tx.hash}`);
 }
 
 const pairs = [
@@ -144,7 +154,6 @@ async function startBot() {
       const raw = (Math.random() * 0.002 + 0.001).toFixed(6);
       const amount = ethers.parseUnits(raw, 18);
 
-      // ✅ CEK SALDO sebelum swap
       const tokenContract = new ethers.Contract(from, ERC20_ABI, provider);
       const balance = await tokenContract.balanceOf(signer.address);
       if (balance < amount) {
@@ -173,14 +182,17 @@ async function startBot() {
       }
 
       if (!success) log("❌ Semua retry swap gagal.");
-      await delay(20000); // antar pair
+
+      log(`⏳ Delay 20 detik sebelum pair berikutnya...`);
+      await delay(20000); // delay antar pair
       swapCount++;
     }
 
     await printBalance(signer);
     const waitSec = Math.floor(Math.random() * (300 - 60 + 1)) + 60;
-    log(`Menunggu ${waitSec} detik sebelum wallet berikutnya...\n`);
+    log(`🕒 Menunggu ${waitSec} detik sebelum wallet berikutnya...`);
     await delay(waitSec * 1000);
+    log(`🔄 Lanjut ke wallet berikutnya...\n`);
 
     walletIndex = (walletIndex + 1) % wallets.length;
   }
