@@ -1,0 +1,2 @@
+Your_Wallet_Name1|0xYOURPRIVATEKEY1
+Your_Wallet_Name2|0xYOURPRIVATEKEY2
