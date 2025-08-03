@@ -79,8 +79,18 @@ async function approveIfNeeded(wallet, token, amount) {
   if (allowance < amount) {
     log(`🛂 Approving ${tokenSymbol(token)}...`);
     const tx = await contract.approve(config.ROUTER_ADDRESS, amount);
-    await tx.wait();
-    log(`✅ Approve: ${token.slice(0, 6)}... OK`);
+    log(`📤 Approve TX sent: ${tx.hash}`);
+    try {
+      await Promise.race([
+        tx.wait(),
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error("Approve TX timeout")), 60000)
+        )
+      ]);
+      log(`✅ Approve: ${token.slice(0, 6)}... OK`);
+    } catch (err) {
+      throw new Error(`Approve GAGAL (${tokenSymbol(token)}): ${err.message}`);
+    }
   } else {
     log(`✔️  Allowance cukup untuk ${tokenSymbol(token)} (skip approve)`);
   }
@@ -132,8 +142,6 @@ async function swap(wallet, from, to, amount) {
   const tx = await router.exactInputSingle(params, { gasLimit: 200000, gasPrice });
 
   log(`📤 TX sent: ${tx.hash}`);
-
-  // Timeout 60 detik
   try {
     await Promise.race([
       tx.wait(),
