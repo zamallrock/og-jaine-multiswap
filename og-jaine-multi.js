@@ -7,9 +7,16 @@ const config = JSON.parse(fs.readFileSync("config.json"));
 const wallets = fs.readFileSync("privatekey.txt", "utf8")
   .split("\n")
   .map((line, i) => {
+    if (!line.trim()) return null;
     const [name, key] = line.includes("|") ? line.split("|") : [`Wallet #${i + 1}`, line];
-    return { name: name.trim(), key: key.trim() };
-  });
+    const trimmedKey = key?.trim();
+    if (!trimmedKey || !trimmedKey.startsWith("0x") || trimmedKey.length < 64) {
+      console.log(`[SKIP] Invalid private key on line ${i + 1}`);
+      return null;
+    }
+    return { name: name.trim(), key: trimmedKey };
+  })
+  .filter(Boolean);
 
 const EXPLORER = "https://chainscan-galileo.0g.ai";
 const provider = new ethers.JsonRpcProvider(config.RPC_URL);
@@ -126,7 +133,7 @@ async function swap(wallet, from, to, amount) {
 
   log(`📤 TX sent: ${tx.hash}`);
 
-  // ✅ Timeout: 60 detik
+  // Timeout 60 detik
   try {
     await Promise.race([
       tx.wait(),
