@@ -1,7 +1,12 @@
 import fs from "fs";
 import { ethers } from "ethers";
 
-console.log("\n✪ ZAMALLROCK | JAINE TESTNET AUTO BOT ✪\n");
+// ✅ Handler agar bot tidak crash kalau ada error async
+process.on("unhandledRejection", (reason, promise) => {
+  console.log("⚠️ Unhandled rejection:", reason?.message || reason);
+});
+
+console.log("\n✪ ZAMALLROCK | SOMNIA EXCHANGE AUTO BOT ✪\n");
 
 const config = JSON.parse(fs.readFileSync("config.json"));
 const wallets = fs.readFileSync("privatekey.txt", "utf8")
