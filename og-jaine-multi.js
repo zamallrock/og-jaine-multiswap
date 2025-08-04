@@ -6,7 +6,7 @@ process.on("unhandledRejection", (reason, promise) => {
   console.log("⚠️ Unhandled rejection:", reason?.message || reason);
 });
 
-console.log("\n✪ ZAMALLROCK | SOMNIA EXCHANGE AUTO BOT ✪\n");
+console.log("\n✪ ZAMALLROCK | OG JAINE AUTO BOT ✪\n");
 
 const config = JSON.parse(fs.readFileSync("config.json"));
 const wallets = fs.readFileSync("privatekey.txt", "utf8")
@@ -230,3 +230,4 @@ async function startBot() {
 }
 
 startBot();
+
