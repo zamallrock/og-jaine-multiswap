@@ -1,7 +1,6 @@
 import fs from "fs";
 import { ethers } from "ethers";
 
-// ✅ Handler agar bot tidak crash kalau ada error async
 process.on("unhandledRejection", (reason, promise) => {
   console.log("⚠️ Unhandled rejection:", reason?.message || reason);
 });
@@ -230,4 +229,5 @@ async function startBot() {
 }
 
 startBot();
+
 
